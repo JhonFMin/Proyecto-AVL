@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDD2 - Visualizador AVL</title>
+    <link rel="icon" type="image/png" href="resource/ICO.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <div class="panel-izquierdo">
+            <h3>CONTROLES</h3>
+            <div class="grupo-control">
+                <label>Insertar (ej: 5,10,15)</label>
+                <div class="input-group">
+                    <input type="text" id="in-insert" placeholder="Valores...">
+                    <button onclick="insertar()" class="btn-azul">Insertar</button>
+                </div>
+            </div>
+            <div class="grupo-control">
+                <label>Eliminar (ej: 10,20)</label>
+                <div class="input-group">
+                    <input type="text" id="in-delete" placeholder="Valores...">
+                    <button onclick="eliminar()" class="btn-rojo">Eliminar</button>
+                </div>
+            </div>
+            <div class="grupo-control">
+                <label>Buscar (ej: 5,15,20)</label>
+                <div class="input-group">
+                    <input type="text" id="in-search" placeholder="Valores...">
+                    <button onclick="buscar()" class="btn-amarillo">Buscar</button>
+                </div>
+            </div>
+            <hr class="separador">
+            <div class="grupo-control">
+                <label>Recorridos</label>
+                <div class="botones-recorrido">
+                    <button onclick="recorrer('preorden')">Pre</button>
+                    <button onclick="recorrer('inorden')">In</button>
+                    <button onclick="recorrer('postorden')">Post</button>
+                </div>
+            </div>
+            <hr class="separador">
+            <button onclick="limpiarArbol()" class="btn-azul full-width">Limpiar Árbol</button>
+            <hr class="separador">
+            <h3>SESIONES</h3>
+            <div class="botones-sesion">
+                <button onclick="nuevaSesion()" class="btn-azul">Nuevo</button>
+                <button onclick="guardarSesion()" class="btn-verde">Guardar</button>
+            </div>
+            <ul id="lista-sesiones" class="lista-oscura"></ul>
+            <hr class="separador">
+            <h3>IMPORTAR / EXPORTAR</h3>
+            <div class="botones-sesion">
+                <button onclick="exportarJSON()" class="btn-verde">Exportar JSON</button>
+                <button onclick="triggerImportJSON()" class="btn-azul">Importar JSON</button>
+            </div>
+            <button onclick="exportarImagen()" class="btn-amarillo full-width" style="margin-top: 5px;">Exportar Imagen
+                (PNG)</button>
+            <input type="file" id="import-json-input" accept=".json" style="display: none;">
+
+
+            <hr class="separador">
+            
+            <div class="titulo-seccion">
+                <h3>CRÉDITOS</h3>
+                <img src="resource/ICO.png" alt="Logo Uni" class="logo-creditos">
+            </div>
+            <div class="creditos-simple">
+                <p>Integrantes: Jhon Mindiola, Jose Barreto, Yeleinys Gomez</p>
+                <p>Curso: Estructura de Datos II - A1</p>
+                <p>Profesor: David Fernandez</p>
+            </div>
+
+        </div>
+
+        <div class="panel-central">
+            <div id="info-barra">
+                <div class="info-title">Visualizador de Árboles AVL - EDD2</div>
+                <div class="info-stats">
+                    <div class="info-item">Nodos: <span id="lbl-nodos">0</span></div>
+                    <div class="info-item">Altura: <span id="lbl-altura">0</span></div>
+                    <div class="info-item">Estado: <span id="lbl-estado">Vacío</span></div>
+                </div>
+                <div class="info-spacer"></div>
+                <div class="controles-zoom">
+                    <button onclick="zoomOut()">-</button>
+                    <button onclick="zoomIn()">+</button>
+                    <button onclick="centrarVista()">Centrar</button>
+                    <button onclick="UI.showHelpModal()" class="btn-help" title="Ayuda y Comandos">?</button>
+                </div>
+            </div>
+            <div id="lienzo-container">
+                <div id="tooltip-nodo" class="tooltip" style="display: none;"></div>
+                <canvas id="lienzo"></canvas>
+            </div>
+        </div>
+
+        <div class="panel-derecho">
+
+            <div class="velocidad-control">
+                <label>VELOCIDAD</label>
+                <div class="slider-wrapper">
+                    <span>Lento</span>
+                    <input type="range" id="velocidad" min="0.5" max="5.0" step="0.1" value="3.0"
+                        oninput="actualizarVelocidad(this.value)">
+                    <span id="velocidad-valor" class="valor-velocidad">3.0x</span>
+                </div>
+            </div>
+
+            <div class="reproduccion-control">
+                <label>REPRODUCCIÓN</label>
+                <div class="botones-reproductor">
+                    <button onclick="AnimPlayer.anterior()" title="Anterior">⏮</button>
+                    <button id="btn-play" onclick="AnimPlayer.play()" class="btn-verde" title="Reproducir">▶</button>
+                    <button id="btn-pause" onclick="AnimPlayer.pause()" class="btn-naranja" style="display: none;"
+                        title="Pausar">⏸</button>
+                    <button onclick="AnimPlayer.siguiente()" title="Siguiente">⏭</button>
+                    <button onclick="AnimPlayer.saltar()" class="btn-rojo" title="Saltar al final">Saltar</button>
+                </div>
+                <div id="paso-contador">Paso: <span id="paso-actual">0</span> / <span id="paso-total">0</span></div>
+            </div>
+
+            <div class="secuencia-control">
+                <label>SECUENCIA</label>
+                <ul id="lista-secuencia" class="lista-oscura secuencia-lista"></ul>
+            </div>
+
+            <div class="historial-control">
+                <h3>HISTORIAL</h3>
+                <ul id="lista-historial" class="lista-oscura"></ul>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="context-menu" class="menu-contextual">
+        <div id="menu-edit" class="menu-item">✏️ Editar Nombre</div>
+        <div id="menu-delete" class="menu-item menu-item-delete">❌ Eliminar</div>
+    </div>
+
+    <div id="traversal-modal">
+        <div class="modal-header">
+            <h3 id="traversal-title">---</h3>
+            <button id="traversal-close" class="btn-rojo">X</button>
+        </div>
+        <div class="modal-content">
+            <div id="traversal-content">...</div>
+        </div>
+    </div>
+
+    <div id="help-modal">
+        <div class="modal-header">
+            <h3>Ayuda y Atajos de Teclado</h3>
+            <button id="help-close" class="btn-rojo">X</button>
+        </div>
+        <div class="modal-content">
+            <div id="help-content">
+                <h4>Atajos del Reproductor</h4>
+                <ul>
+                    <li><kbd>Espacio</kbd>: Reproducir / Pausar la animación.</li>
+                    <li><kbd>Flecha Derecha</kbd>: Siguiente paso.</li>
+                    <li><kbd>Flecha Izquierda</kbd>: Paso anterior.</li>
+                    <li><kbd>Ctrl</kbd> + <kbd>Enter</kbd>: Saltar al final de la animación.</li>
+                </ul>
+                <h4>Navegación del Lienzo</h4>
+                <ul>
+                    <li><kbd>Clic y Arrastrar</kbd>: Mover (Pan) el árbol por el lienzo.</li>
+                    <li><kbd>Rueda del Ratón</kbd>: Acercar / Alejar (Zoom).</li>
+                    <li><kbd>Botón "Centrar"</kbd>: Restablece la vista del lienzo.</li>
+                </ul>
+                <h4>Sesiones</h4>
+                <ul>
+                    <li><kbd>Clic Derecho</kbd> sobre una sesión guardada para Editar o Eliminar.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="modal-backdrop" class="hidden"></div>
+
+    <div id="custom-modal" class="custom-modal hidden">
+        <div class="custom-modal-header">
+            <h3 id="custom-modal-title">Título Modal</h3>
+            <button class="close-modal-btn" data-action="cancel">&times;</button>
+        </div>
+        <div class="custom-modal-content">
+            <p id="custom-modal-message">Mensaje del modal.</p>
+            <input type="text" id="custom-modal-input" placeholder="Ingrese un valor..." class="hidden" />
+        </div>
+        <div id="custom-modal-buttons" class="custom-modal-buttons">
+        </div>
+    </div>
+    <script src="script.js"></script>
+
+</body>
+
+</html>

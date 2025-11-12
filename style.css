@@ -1,0 +1,727 @@
+:root {
+    --bg-dark: #1e1e1e; --bg-darker: #151525; --bg-panel: #252526;
+    --accent-blue: #007ACC; --accent-green: #6a9955; --accent-red: #f44747;
+    --accent-orange: #d4a574; --accent-yellow: #dcdcaa;
+    --text-light: #cccccc; --text-dim: #888888; --border-color: #3e3e42;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+/* --- ★★★ REEMPLAZA ESTA REGLA (al inicio del CSS) ★★★ --- */
+/* --- MODIFICADO (Paso 1) --- */
+/* --- ★★★ REEMPLAZO (Paso 1) ★★★ --- */
+body, html {
+    height: 100%;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-dark); /* Color sólido oscuro */
+    color: var(--text-light);
+    overflow-x: hidden; /* Previene scroll horizontal */
+    /* (Dejamos que el scroll vertical aparezca si es necesario) */
+}
+.app-container { display: flex; height: 100vh; }
+
+/* Paneles */
+/* --- MODIFICADO (Paso 2) --- */
+/* --- ★★★ REEMPLAZA ESTA REGLA COMPLETA (Paso 2) ★★★ --- */
+.panel-izquierdo, .panel-derecho {
+    /* Lógica flexible (arregla el "mochado" en 1366px) */
+    flex-basis: 340px; /* Tamaño base "ideal" */
+    flex-shrink: 1;    /* SÍ se puede encoger */
+    flex-grow: 0;      /* NO se puede agrandar */
+    min-width: 280px;  /* Límite de encogimiento (¡este es el min-width bueno!) */
+
+    /* El resto de tus estilos */
+    background-color: var(--bg-panel); 
+    padding: 15px;
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px;
+    border-right: 2px solid var(--accent-blue);
+    position: relative;
+    z-index: 1;
+    overflow-y: auto; 
+    min-height: 0;
+}
+.panel-derecho { 
+    border-right: none; 
+    border-left: 2px solid var(--accent-blue); 
+    /* ¡Importante! 'justify-content' se quita para que 'flex-grow' funcione */
+}
+/* --- MODIFICADO (Paso 3) --- */
+.panel-central { 
+    flex-grow: 1; 
+    display: flex; 
+    flex-direction: column; 
+    background-color: var(--bg-dark); 
+   min-width: 300px; /* Asegura que el canvas nunca sea más pequeño que 300px */
+}/* Controles Generales */
+h3 { color: var(--accent-blue); font-size: 13px; font-weight: bold; margin-bottom: 5px; letter-spacing: 0.5px; }
+.separador { border: none; border-top: 1px solid var(--border-color); margin: 5px 0; }
+label { font-size: 11px; font-weight: bold; color: var(--accent-blue); margin-bottom: 4px; display: block; }
+
+button {
+    padding: 8px; border: none; border-radius: 3px;
+    color: white; font-size: 11px; font-weight: bold; cursor: pointer;
+    transition: all 0.2s; background-color: #3c3c3c;
+}
+button:hover { filter: brightness(1.1); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-azul { background-color: var(--accent-blue); }
+.btn-rojo { background-color: var(--accent-red); }
+.btn-verde { background-color: var(--accent-green); }
+.btn-amarillo { background-color: var(--accent-yellow); color: #222; }
+.btn-naranja { background-color: var(--accent-orange); color: #222; }
+.full-width { width: 100%; }
+
+input[type="text"] {
+    flex-grow: 1; background-color: var(--bg-dark); border: 1px solid #555;
+    color: white; padding: 8px; font-size: 11px; border-radius: 3px; outline: none;
+}
+input[type="text"]:focus { border-color: var(--accent-blue); }
+.input-group, .botones-recorrido, .botones-sesion { display: flex; gap: 5px; }
+.botones-recorrido button, .botones-sesion button { flex: 1; }
+
+.lista-oscura {
+    background-color: var(--bg-dark); border: 1px solid var(--border-color);
+    list-style: none; overflow-y: auto; padding: 5px; font-size: 11px;
+}
+.lista-oscura li { padding: 3px 6px; border-bottom: 1px solid #2a2a2a; }
+.lista-oscura li:not(.session-item) { cursor: pointer; }
+.lista-oscura li:not(.session-item):hover { background-color: #2a2d2e; }
+.lista-oscura li.activo { background-color: rgba(0, 122, 204, 0.2); border-left: 3px solid var(--accent-blue); color: white; }
+
+/* Barra Superior */
+#info-barra {
+    background-color: var(--bg-panel);
+    border-bottom: 2px solid var(--border-color);
+    padding: 0 20px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+}
+.info-title { 
+    font-weight: bold; 
+    color: var(--text-light); 
+    font-size: 16px;
+    padding-right: 25px;
+    border-right: 1px solid var(--border-color); 
+}
+.info-stats { display: flex; gap: 25px; padding-left: 25px; }
+.info-item { color: var(--text-dim); font-size: 12px; font-weight: bold; }
+.info-item span {
+    color: var(--text-light); font-weight: bold; margin-left: 6px;
+    font-size: 13px; min-width: 80px; display: inline-block;
+}
+.info-spacer { flex-grow: 1; }
+.controles-zoom { display: flex; gap: 5px; }
+
+/* ======== ESTILO BOTÓN DE AYUDA AÑADIDO ======== */
+.btn-help {
+    background-color: var(--accent-orange);
+    color: #222;
+    font-weight: bold;
+    font-size: 14px;
+    width: 28px; /* Ancho fijo para hacerlo cuadrado/redondo */
+    padding: 6px 0; /* Ajuste de padding */
+    line-height: 1; /* Asegura que el '?' esté centrado */
+    border-radius: 50%; /* Lo hace redondo */
+}
+.btn-help:hover {
+    filter: brightness(1.2);
+}
+/* ============================================= */
+
+/* Lienzo (Canvas) */
+#lienzo-container {
+    flex-grow: 1; background-color: var(--bg-darker); position: relative;
+    overflow: hidden; cursor: grab;
+}
+#lienzo-container:active { cursor: grabbing; }
+.tooltip {
+    position: absolute; background-color: rgba(45, 45, 45, 0.95); color: white;
+    border: 1px solid var(--accent-blue); padding: 8px; font-size: 11px;
+    pointer-events: none; z-index: 100; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+/* --- INICIO DE LA CORRECCIÓN DE LAYOUT --- */
+
+#lista-sesiones {
+    flex: 0 1 120px; /* Altura máxima de 120px */
+    min-height: 80px;
+}
+#lista-historial {
+    flex-grow: 1; /* Crece para llenar el espacio de .seccion-sesiones */
+    min-height: 50px; /* Altura mínima */
+}
+
+
+
+/* --- FIN DE LA CORRECCIÓN DE LAYOUT --- */
+
+.slider-wrapper { display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--text-dim); }
+input[type=range] { flex-grow: 1; cursor: pointer; }
+.valor-velocidad { color: var(--accent-blue); font-weight: bold; min-width: 35px; text-align: right; }
+
+.botones-reproductor { display: flex; gap: 5px; margin-bottom: 5px; }
+.botones-reproductor button { flex: 1; font-size: 14px; padding: 8px 0; }
+#paso-contador { text-align: center; font-size: 11px; color: var(--text-dim); }
+#paso-actual, #paso-total { color: var(--accent-blue); font-weight: bold; }
+
+.descripcion-paso { display: none; }
+
+/* Toast (Notificaciones) */
+.toast-message {
+    position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+    padding: 10px 25px; border-radius: 20px; color: white; font-size: 12px; font-weight: bold;
+    z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.4); animation: fadeIn 0.3s ease-out;
+}
+.toast-error { background-color: var(--accent-red); }
+.toast-success { background-color: var(--accent-green); }
+.toast-info { background-color: var(--accent-blue); }
+.toast-warning { background-color: var(--accent-yellow); color: #222; }
+@keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* Estilos de Sesiones */
+.session-item {
+    padding: 6px 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #2a2a2a;
+    position: relative;
+}
+.session-item:hover { background-color: #2a2d2e; }
+.session-name { font-weight: bold; color: var(--text-light); font-size: 12px; }
+.session-date { font-size: 10px; color: var(--text-dim); }
+
+/* Menú Contextual (Click Derecho) */
+.menu-contextual {
+    display: none;
+    position: absolute;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    border-radius: 4px;
+    z-index: 101;
+    font-size: 12px;
+    padding: 5px 0;
+}
+.menu-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    color: var(--text-light);
+}
+.menu-item:hover { background-color: var(--accent-blue); }
+.menu-item-delete:hover { background-color: var(--accent-red); }
+
+/* Modal de Recorridos */
+#traversal-modal {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    max-width: 800px;
+    min-width: 500px;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--accent-blue);
+    border-radius: 5px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    z-index: 101;
+    color: var(--text-light);
+    position: fixed; /* Asegúrate de que sea 'fixed' o 'absolute' */
+    overflow: hidden; /* Para que el fondo respete los bordes redondeados */
+    z-index: 101; /* (z-index local para el ::before) */
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: var(--bg-dark);
+    border-bottom: 1px solid var(--border-color);
+}
+.traversal-number {
+    background-color: var(--accent-blue);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 13px;
+    margin: 3px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.traversal-arrow {
+    color: var(--accent-green);
+    font-weight: bold;
+    font-size: 16px;
+    margin: 3px;
+}
+/* --- Fondo con Opacidad para Paneles --- */
+/* --- ★★★ ASEGÚRATE QUE ESTA REGLA ESTÉ ASÍ ★★★ --- */
+.panel-izquierdo::before,
+.panel-derecho::before {
+    content: "";
+    position: absolute;
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    background-image: url(resource/screen.jpg); /* La imagen en los paneles */
+    background-size: cover;
+    background-position: center;
+    opacity: 0.20; 
+    z-index: -1; 
+}
+.modal-header h3 { margin: 0; color: var(--accent-yellow); }
+.modal-header button { padding: 3px 8px; font-size: 12px; }
+
+/* ======== ESTILOS MODAL DE AYUDA AÑADIDOS ======== */
+#help-modal {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    top: 50%; /* Centrado vertical */
+    left: 50%; /* Centrado horizontal */
+    transform: translate(-50%, -50%); /* Ajuste fino de centrado */
+    width: 50%;
+    max-width: 600px;
+    min-width: 450px;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--accent-orange); /* Borde naranja para diferenciar */
+    border-radius: 5px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    z-index: 101;
+    color: var(--text-light);
+}
+
+#help-content {
+    padding: 20px;
+    font-size: 14px;
+    color: var(--text-light);
+    background-color: var(--bg-dark);
+    margin: 15px;
+    border-radius: 4px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#help-content h4 {
+    color: var(--accent-orange);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 5px;
+    margin-top: 10px;
+}
+#help-content ul {
+    list-style-position: inside;
+    padding-left: 10px;
+}
+#help-content li {
+    margin: 8px 0;
+}
+#help-content kbd {
+    background-color: #3e3e42;
+    border: 1px solid #555;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    color: var(--accent-yellow);
+}
+/* ================================================= */
+
+/* Contenido del modal (compartido) */
+#traversal-content {
+    padding: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    color: var(--text-light);
+    white-space: pre-wrap; 
+    word-wrap: break-word;
+    background-color: var(--bg-dark);
+    margin: 15px;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+
+    /* Para que los spans se alineen bien */
+    display: flex; 
+    flex-wrap: wrap;
+    align-items: center;
+}
+.creditos-simple p {
+    font-size: 12px;            /* Letra pequeña */
+  color: var(--text-light);  /* Color de texto atenuado */
+    margin: 5px 0;            /* Espacio entre líneas */
+    line-height: 1.4;
+}
+/* --- ★★★ AÑADE ESTE BLOQUE (Diseño Escritorio Panel Derecho) ★★★ --- */
+
+/* (Velocidad) */
+.velocidad-control {
+    order: 2; /* 2º en Escritorio */
+    flex: 0 0 auto; /* No crecer */
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* (Reproducción) */
+.reproduccion-control {
+    order: 3; /* 3º en Escritorio */
+    flex: 0 0 auto; /* No crecer */
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* (Secuencia) */
+.secuencia-control {
+    order: 4; /* 4º en Escritorio */
+    flex: 1 1 auto; /* Crecer para llenar el espacio */
+    display: flex;
+    flex-direction: column;
+    min-height: 150px; /* Altura mínima */
+}
+#lista-secuencia {
+    flex-grow: 1; /* La lista llena el control */
+}
+
+/* (Historial) */
+.historial-control {
+    order: 1; /* 1º en Escritorio */
+    flex: 0 0 auto; /* No crecer */
+    display: flex;
+    flex-direction: column;
+    height: 250px; /* Altura fija para el historial en desktop */
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+#lista-historial {
+    flex-grow: 1; /* La lista llena el control */
+}
+/* ======== ESTILOS RESPONSIVE (PARA CELULARES) - CORREGIDO ======== */
+/* ======== ESTILOS RESPONSIVE (PARA CELULARES) - CORREGIDO ======== */
+@media (max-width: 800px) {
+
+    /* ★★★ ARREGLO 1: FONDO SEPARADO PARA CELULAR ★★★ */
+    body, html {
+        height: auto; /* Permite scroll vertical */
+        min-height: 100%;
+        overflow-y: auto;
+        
+        /* Ponemos el fondo en el BODY (solo en móvil) */
+        background-image: url(resource/screen.jpg);
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed; /* Fondo fijo para que llene todo */
+    }
+.botones-sesion label.btn-azul {
+    /* Copiamos los estilos de tus botones */
+    display: inline-block;
+    padding: 8px;
+    border: none;
+    border-radius: 3px;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    /* Hacemos que se alinee y crezca como el otro botón */
+    flex: 1;
+    text-align: center;
+    line-height: 1.5; /* Ajuste para centrado vertical */
+}
+
+.botones-sesion label.btn-azul:hover {
+    filter: brightness(1.1);
+}
+    /* Quitamos el fondo de los paneles (solo en móvil) */
+    .panel-izquierdo::before,
+    .panel-derecho::before {
+        background-image: none;
+    }
+    .app-container > .creditos-simple {
+    width: 100%;
+    padding: 20px 15px;
+    text-align: center;
+    background-color: var(--bg-dark); /* Fondo oscuro */
+}
+.app-container > h3 {
+    display: none; /* Ocultamos el H3 de créditos en móvil */
+}
+.app-container > .separador {
+     display: none; /* Ocultamos el separador de créditos en móvil */
+}
+    
+    .app-container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .panel-izquierdo, .panel-derecho {
+        width: 100%;
+        min-width: 100%;
+        height: auto;
+        border-right: none;
+        border-left: none;
+        border-bottom: 2px solid var(--accent-blue);
+        
+        /* Hacemos los paneles transparentes para ver el fondo del body */
+        background-color: rgba(37, 37, 38, 0.85); /* 85% opaco */
+    }
+    
+    .panel-central {
+        height: 500px;
+        min-height: 500px;
+    }
+    
+    /* --- ★★★ AÑADE ESTE BLOQUE (Diseño Móvil Panel Derecho) ★★★ --- */
+/* (Dentro de @media (max-width: 800px) ... ) */
+
+/* 1. Resetea el orden y el tamaño */
+.velocidad-control,
+.reproduccion-control,
+.secuencia-control,
+.historial-control {
+    order: 0; /* Resetea el orden al del HTML (Móvil) */
+    flex: 0 0 auto; /* Quita el flex-grow */
+    height: auto; /* Quita alturas fijas */
+    min-height: auto;
+    border-bottom: none; /* Quitamos bordes internos */
+    padding-bottom: 0;
+}
+
+/* 2. Da un alto fijo con scroll a las listas */
+#lista-historial,
+#lista-secuencia {
+    height: 200px;
+    max-height: 200px;
+    overflow-y: auto;
+    min-height: auto;
+    flex-grow: 0;
+}
+
+    /* ★★★ ARREGLO 2: HISTORIAL FIJO ★★★ */
+   /* ★★★ ARREGLO 2: Listas de Historial y Secuencia Fijas ★★★ */
+
+
+/* (Dentro de @media (max-width: 800px) ... ) */
+
+/* ★★★ NUEVO ARREGLO: 
+    Desactiva el "crecimiento" de los contenedores
+    padres de la lista de secuencia en móvil 
+*/
+
+/* Y también, QUITA esta regla si la encuentras (la de height: auto) */
+.seccion-sesiones {
+    /* height: auto; */ /* ¡Elimina o comenta esta línea! */
+}
+    
+    /* ★★★ ARREGLO 3: BOTONES MÓVIL (Estado y Centrar) ★★★ */
+    .controles-zoom button[onclick="zoomOut()"],
+    .controles-zoom button[onclick="zoomIn()"],
+    .controles-zoom button.btn-help {
+        display: none; /* Oculta +/- y ? */
+    }
+
+    #info-barra {
+        flex-wrap: wrap; 
+        height: auto;    
+        padding: 10px;
+    }
+    .info-title {
+        width: 100%; 
+        border-right: none;
+        margin-bottom: 10px;
+    }
+    .info-spacer {
+        display: none; 
+    }
+    .info-stats { /* (Aquí está el ESTADO) */
+        width: 100%; 
+        padding-left: 0;
+        justify-content: space-between; 
+        margin-bottom: 10px;
+    }
+    .controles-zoom { /* (Aquí está CENTRAR) */
+        width: 100%; 
+        justify-content: center; 
+    }
+
+    /* (Arreglos de modales que ya tenías) */
+    #traversal-modal, #help-modal {
+        width: 95%; 
+        min-width: unset; 
+        bottom: auto; 
+        top: 10%;     
+        left: 2.5%; 
+        transform: none; 
+    }
+    
+    #traversal-content, #help-content {
+        max-height: 300px; 
+    }
+}
+/* --- ★★★ PEGA ESTE BLOQUE AL FINAL DE TU CSS ★★★ --- */
+
+/* --- ESTILOS PARA MODALES PERSONALIZADOS --- */
+/* --- ★★★ PEGA ESTE BLOQUE AL FINAL DE TU CSS ★★★ --- */
+
+/* --- ESTILOS PARA MODALES PERSONALIZADOS --- */
+.hidden {
+    display: none !important; 
+}
+
+#modal-backdrop {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7); 
+    z-index: 200; 
+}
+/* --- ★★★ REEMPLAZA ESTA REGLA (Paso 3B) ★★★ --- */
+.custom-modal {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%; 
+    max-width: 450px; 
+    background-color: var(--bg-panel); /* Color de tu panel */
+    border: 1px solid var(--accent-blue); /* Borde azul */
+    border-radius: 12px; 
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5); 
+    z-index: 201; 
+    color: var(--text-light); /* Texto claro */
+    
+    /* ¡Importante para el fondo! */
+    overflow: hidden; /* Para que el fondo respete los bordes redondeados */
+}
+.custom-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background-color: var(--bg-dark); /* Fondo de cabecera oscuro */
+    border-bottom: 1px solid var(--border-color);
+}
+.custom-modal-header h3 {
+    margin: 0;
+    color: var(--accent-yellow); /* Título amarillo */
+    font-size: 20px;
+    font-weight: bold;
+}
+.close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--text-dim); /* Color de texto atenuado */
+    cursor: pointer;
+    line-height: 1;
+}
+.close-modal-btn:hover {
+    color: var(--text-light);
+}
+.custom-modal-content {
+    padding: 25px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--text-light);
+    background-color: var(--bg-panel); /* Fondo de panel */
+}
+.custom-modal-content p {
+    margin-bottom: 15px;
+}
+.custom-modal-content input[type="text"] {
+    width: 100%; /* Corregido para que ocupe todo */
+    padding: 10px;
+    background-color: var(--bg-dark); /* Estilo de tus inputs */
+    border: 1px solid var(--border-color);
+    color: var(--text-light);
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box; 
+}
+.custom-modal-content input[type="text"]:focus {
+    border-color: var(--accent-blue); /* Resalte azul al enfocar */
+    outline: none;
+    box-shadow: 0 0 5px var(--accent-blue);
+}
+.custom-modal-buttons {
+    display: flex;
+    justify-content: flex-end; 
+    gap: 15px; 
+    padding: 18px 25px;
+    background-color: var(--bg-dark); /* Fondo de botones oscuro */
+    border-top: 1px solid var(--border-color);
+}
+.custom-modal-buttons .btn-modal { 
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+}
+.custom-modal-buttons .btn-cancel {
+    background-color: var(--accent-orange); /* Botón Naranja */
+    color: #222; /* Texto oscuro para contraste */
+}
+.custom-modal-buttons .btn-cancel:hover {
+    filter: brightness(1.1);
+}
+.custom-modal-buttons .btn-confirm {
+    background-color: var(--accent-green); /* Botón Verde */
+    color: white;
+}
+.custom-modal-buttons .btn-confirm:hover {
+    filter: brightness(1.1);
+}
+
+.custom-modal::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url(resource/screen2.jpg); /* Tu imagen screen2 */
+    background-size: cover;
+    background-position: center;
+    opacity: 0.20; 
+    z-index: -1; 
+}
+
+/* Fondo para el modal de RECORRIDOS (el gris) */
+#traversal-modal::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url(resource/screen2.jpg); /* Tu imagen screen2 */
+    background-size: cover;
+    background-position: center;
+    opacity: 0.20; 
+    z-index: -1; 
+}
+
+/* Hacemos transparente el fondo "gris" del modal de recorridos
+   para que se vea la imagen de fondo */
+#traversal-modal {
+    background-color: rgba(37, 37, 38, 0.85); /* 85% opaco (como tus paneles) */
+}
+#traversal-content {
+    background-color: transparent; /* Quita el fondo negro de los números */
+}
+/* --- Estilo para el logo en Créditos --- */
+
+.titulo-seccion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* H3 a la izq, logo a la der */
+    margin-bottom: 5px; /* Reemplaza el margen del H3 */
+}
+
+.titulo-seccion h3 {
+    margin-bottom: 0; /* Quitamos el margen original del h3 */
+}
+
+.logo-creditos {
+    height: 40px; /* Ajusta esta altura como quieras */
+    width: auto;  /* Mantiene la proporción */
+    opacity: 0.8; /* Se ve un poco más suave */
+}
