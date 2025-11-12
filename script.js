@@ -79,10 +79,12 @@ class AVL {
             n.color = COLORS.delete;
             await History.record(`🎯 Nodo ${val} a eliminar`, COLORS.delete);
             if (!n.left || !n.right) n = n.left || n.right;
+           // (Este es el REEMPLAZO con el predecesor)
             else {
-                let temp = this._getMin(n.right);
+                let temp = this._getMax(n.left); // <-- CAMBIO 1: Buscar el MÁXIMO a la IZQUIERDA
                 await History.record(`🔄 Reemplazo por ${temp.value}`, COLORS.highlight);
-                n.value = temp.value; n.right = await this._deleteRec(n.right, temp.value);
+                n.value = temp.value;
+                n.left = await this._deleteRec(n.left, temp.value); // <-- CAMBIO 2: Eliminar el nodo de la IZQUIERDA
             }
         }
         if (!n) return null;
@@ -157,6 +159,7 @@ class AVL {
     }
     search(val) { let c = this.root; while (c) { if (val === c.value) return c; c = val < c.value ? c.left : c.right; } return null; }
     _getMin(n) { while (n.left) n = n.left; return n; }
+    _getMax(n) { while (n.right) n = n.right; return n; }
     count() { return this._c(this.root); } _c(n) { return n ? 1 + this._c(n.left) + this._c(n.right) : 0; }
     height() { return this.root?.height || 0; }
 }
